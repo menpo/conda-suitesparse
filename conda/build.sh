@@ -15,10 +15,10 @@ cd build
 
 cmake .. \
 -DLIB_POSTFIX="" \
--DSHARED=1 \
 -DBUILD_METIS=1 \
 -DGKLIB_PATH="$RECIPE_DIR/../metis/GKlib" \
 -DCMAKE_INSTALL_PREFIX=$PREFIX
+#-DSHARED=1
 
 # I have no idea how to stop the CMake from putting -lrt
 # inside the link.txt, so I've had to improvise by sed'ing it out
