@@ -1,0 +1,11 @@
+package:
+  name: suitesparse
+  version: 4.4.1
+
+requirements:
+  build:
+    - cmake [win]
+
+about:
+  home: http://faculty.cse.tamu.edu/davis/suitesparse.html
+  license: GPLv3
