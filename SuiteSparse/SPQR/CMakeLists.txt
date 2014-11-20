@@ -4,8 +4,9 @@ include_directories("${suitesparseconfig_SOURCE_DIR}")
 include_directories("${SPQR_SOURCE_DIR}/Include")
 include_directories("${CHOLMOD_SOURCE_DIR}/Include")
 
-FILE(GLOB LIBHDRS "Include/*.h*") # .h & .hpp
-SET(LIBSRCS 
+FILE(GLOB LIBHDRS "Include/*.h*") # .h & .hppb
+
+SET(LIBSRCS
 	Source/spqr_rmap.cpp
 	Source/SuiteSparseQR_C.cpp
 	Source/SuiteSparseQR_expert.cpp
@@ -49,7 +50,7 @@ SET(LIBSRCS
 	)
 	
 declare_suitesparse_library(spqr "${LIBSRCS}" "${LIBHDRS}"
-	TARGET_PRIVATE_LINK	${SuiteSparse_LINKER_LAPACK_BLAS_LIBS}
-	TARGET_PUBLIC_LINK 	camd ccolamd cholmod ${SuiteSparse_LINKER_METIS_LIBS}
+	TARGET_PRIVATE_LINK	${METIS_LIBS} ${SuiteSparse_LINKER_LAPACK_BLAS_LIBS}
+	TARGET_PUBLIC_LINK camd ccolamd cholmod
 )
 

@@ -6,13 +6,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -mtune=native")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")
 
-# Global flags:
-IF (BUILD_METIS)
-	INCLUDE_DIRECTORIES("${METIS_SOURCE_DIR}/include")
-ELSE (BUILD_METIS)
-	ADD_DEFINITIONS(-DNPARTITION)
-ENDIF ( BUILD_METIS)
-
 # Disable COMPLEX numbers: disable it by default, since it causes problems in some platforms.
 SET(HAVE_COMPLEX OFF CACHE BOOL "Enables building SuiteSparse with complex numbers (disabled by default to avoid problems in some platforms)")
 IF (NOT HAVE_COMPLEX)

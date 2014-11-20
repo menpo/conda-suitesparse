@@ -5,6 +5,9 @@ package:
 requirements:
   build:
     - cmake [win]
+    - metis 5.1.0
+  run:
+    - metis 5.1.0
 
 about:
   home: http://faculty.cse.tamu.edu/davis/suitesparse.html

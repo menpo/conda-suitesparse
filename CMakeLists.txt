@@ -9,8 +9,6 @@ PROJECT(SuiteSparseProject)
 
 cmake_minimum_required(VERSION 2.8.10)
 
-include(checkGetSuiteSparse.cmake)
-
 SET(LIBRARY_OUTPUT_PATH ${${PROJECT_NAME}_BINARY_DIR}/lib CACHE PATH "Output directory for libraries" )
 SET(EXECUTABLE_OUTPUT_PATH ${${PROJECT_NAME}_BINARY_DIR}/bin CACHE PATH "Output directory for applications" )
 
@@ -34,43 +32,6 @@ set(CMAKE_DEBUG_POSTFIX  "d")
 IF(MSVC)
 	set(SP_LIB_PREFIX "lib")  # Libs are: "libXXX"
 ENDIF(MSVC)
-
-## check if we can build metis	
-SET(BUILD_METIS_DEFAULT ON)	
-IF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/metis/CMakeLists.txt")
-	SET(BUILD_METIS_DEFAULT OFF)
-ENDIF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/metis/CMakeLists.txt")
-
-SET(BUILD_METIS ${BUILD_METIS_DEFAULT} CACHE BOOL "Build METIS for partitioning?")
-
-SET(METIS_DIR ${${PROJECT_NAME}_SOURCE_DIR}/metis CACHE PATH "Source directory of METIS")
-
-if(BUILD_METIS)
-	## prepare the installation :
-	## using metis target here is not possible because this target is added in another branch of the CMake structure
-	## TRICK: need to dynamically modify the metis CMakeLists.txt file before it going to parsed... 
-	## (very ugly/poor for a metis project get from SCM (git/svn/cvs) but it's works ;) and it doesn't matter if metis was get from .zip)
-	if(EXISTS "${METIS_DIR}/libmetis/CMakeLists.txt")
-		file(READ "${METIS_DIR}/libmetis/CMakeLists.txt" contentFile)
-		string(REGEX MATCH "EXPORT 	SuiteSparse" alreadyModified ${contentFile}) ## use a string pattern to check if we have to do the modif
-		if(NOT alreadyModified)
-			file(APPEND "${METIS_DIR}/libmetis/CMakeLists.txt"
-			"
-				set_target_properties(metis PROPERTIES PUBLIC_HEADER \"../include/metis.h\")
-				install(TARGETS metis ## this line is also the string pattern to check if the modification had already done
-						EXPORT 	SuiteSparse
-						RUNTIME DESTINATION bin
-						LIBRARY DESTINATION lib${LIB_POSTFIX}
-						ARCHIVE DESTINATION lib${LIB_POSTFIX}
-						PUBLIC_HEADER DESTINATION include
-				)
-			"
-			)
-		endif()
-	endif()
-	add_subdirectory(metis) ## important part for building metis from its src files
-endif(BUILD_METIS)
-
 
 ## For EXPORT only :
 ## Previous version of cmake (>2.8.12) doesn't auto take into account external lib (here I mean blas and lapack) we need to link to for our current target we want to export.
@@ -122,14 +83,15 @@ macro(declare_suitesparse_library targetName srcsList headersList)
 		set(dsl_TARGET_PUBLIC_LINK "")
 	endif()
 	
-	ADD_LIBRARY(${targetName} ${srcsList} ${headersList})
+    set(total_sources ${srcsList} ${suitesparseconfig_SOURCE_DIR}/SuiteSparse_config.c)
+    ADD_LIBRARY(${targetName} ${total_sources} ${headersList})
 	SET_TARGET_PROPERTIES(${targetName} PROPERTIES 
 		OUTPUT_NAME ${SP_LIB_PREFIX}${targetName}
 	)
 	
 	target_link_libraries(${targetName} 
-		LINK_PUBLIC	 ${dsl_TARGET_PUBLIC_LINK} suitesparseconfig ## suitesparseconfig is used for every projects (embedded into cmake build)
-		LINK_PRIVATE ${dsl_TARGET_PRIVATE_LINK}	## external required libs
+		LINK_PUBLIC	 ${dsl_TARGET_PUBLIC_LINK} suitesparseconfig # suitesparseconfig is used for every projects (embedded into cmake build)
+		LINK_PRIVATE ${dsl_TARGET_PRIVATE_LINK}	 # external required libs
 	)
 
 	install_suitesparse_project(${targetName} "${headersList}")
@@ -147,16 +109,6 @@ MACRO(REMOVE_MATCHING_FILES_FROM_LIST match_expr lst_files)
 	SET(${lst_files} ${lst_files_aux})
 ENDMACRO(REMOVE_MATCHING_FILES_FROM_LIST)
 
-
-## check if the SHARED variable has already been defined (by the metis project) and use it for our projects
-## BUILD_SHARED_LIBS specific variable allow cmake to know what kind of lib (STATIC or SHARED) it have to build
-if(DEFINED SHARED)
-	set(BUILD_SHARED_LIBS ${SHARED})
-else()
-	set(SHARED FALSE CACHE BOOL "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)")
-	set(BUILD_SHARED_LIBS OFF)
-endif()
-
 ## Need to use SuiteSparse_LINKER_LAPACK_BLAS_LIBS in our subproject in case of SHARED flag is set to ON
 SET(SUITESPARSE_USE_CUSTOM_BLAS_LAPACK_LIBS OFF CACHE BOOL "Check if you have custom LAPACK/BLAS libraries (AMD,...)")
 IF (SUITESPARSE_USE_CUSTOM_BLAS_LAPACK_LIBS)
@@ -168,8 +120,10 @@ IF (SUITESPARSE_USE_CUSTOM_BLAS_LAPACK_LIBS)
 		SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS ${SUITESPARSE_CUSTOM_BLAS_LIB} ${SUITESPARSE_CUSTOM_LAPACK_LIB})
 	ENDIF()
 ELSE()
-	IF (UNIX)
+	IF (UNIX AND NOT APPLE)
 		SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS lapack blas rt)
+    ELSEIF(APPLE)
+        SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS lapack blas)
 	ELSE()
 		IF(CMAKE_SIZEOF_VOID_P EQUAL 8)  # Size in bytes!
 			set(PATH_WORD_SIZE "x64")
@@ -200,10 +154,14 @@ ELSE()
 	ENDIF()
 ENDIF()
 
-IF(BUILD_METIS)
-	set(SuiteSparse_LINKER_METIS_LIBS "metis")
-else()
-	set(SuiteSparse_LINKER_METIS_LIBS "")
+SET(USE_METIS OFF CACHE BOOL "Check if you have Metis 5.1.0")
+SET(METIS_LIB_PATH "" CACHE FILE "Path to custom library file for Metis")
+SET(METIS_INCLUDE_PATH "" CACHE PATH "Path to Metis headers")
+IF(USE_METIS)
+	SET(METIS_LIBS ${METIS_LIB_PATH})
+ELSE(USE_METIS)
+	set(METIS_LIBS "")
+    ADD_DEFINITIONS(-DNPARTITION)
 ENDIF()
 
 add_subdirectory(SuiteSparse)
