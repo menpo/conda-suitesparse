@@ -17,7 +17,7 @@ FILE(GLOB LIBSRCS "SourceWrappers/*.c")
 
 
 declare_suitesparse_library(cholmod "${LIBSRCS}" "${LIBHDRS}"
-	TARGET_PRIVATE_LINK	${METIS_LIBS} ${SuiteSparse_LINKER_LAPACK_BLAS_LIBS}
-	TARGET_PUBLIC_LINK amd camd colamd ccolamd
+	TARGET_PRIVATE_LINK	${SuiteSparse_LINKER_LAPACK_BLAS_LIBS}
+	TARGET_PUBLIC_LINK ${METIS_LIBS} amd camd colamd ccolamd
 )
 

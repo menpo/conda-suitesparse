@@ -6,6 +6,12 @@ IF(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -mtune=native")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")
 
+#if (BUILD_SHARED_LIBS)
+# I cannot work out how to make the shared library build work properly
+# but statically linking seems to work if we turn on fPIC
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+#endif()
+
 # Disable COMPLEX numbers: disable it by default, since it causes problems in some platforms.
 SET(HAVE_COMPLEX OFF CACHE BOOL "Enables building SuiteSparse with complex numbers (disabled by default to avoid problems in some platforms)")
 IF (NOT HAVE_COMPLEX)
