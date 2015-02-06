@@ -1,14 +1,22 @@
 package:
   name: suitesparse
-  version: 4.4.1
+  version: "4.4.1"
+
+build:
+    features:
+      - mkl
+
+    string: "p0"
 
 requirements:
   build:
     - cmake [win]
     - metis 5.1.0
+    - mkl-rt
 
   run:
     - metis 5.1.0
+    - mkl-rt
 
 about:
   home: http://faculty.cse.tamu.edu/davis/suitesparse.html
