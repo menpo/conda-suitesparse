@@ -4,11 +4,13 @@ package:
 
 requirements:
   build:
-    - cmake [win]
+    - cmake  # [win]
+    - openblas 0.2.13  # [win]
     - metis 5.1.0
 
   run:
     - metis 5.1.0
+    - openblas 0.2.13  # [win]
 
 about:
   home: http://faculty.cse.tamu.edu/davis/suitesparse.html

@@ -121,32 +121,15 @@ ELSE()
     ELSEIF(APPLE)
         SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS lapack blas)
 	ELSE()
-		IF(CMAKE_SIZEOF_VOID_P EQUAL 8)  # Size in bytes!
-			set(PATH_WORD_SIZE "x64")
-		ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)  # Size in bytes!
-			set(PATH_WORD_SIZE "x32")
-		ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-
 		add_library(blas SHARED IMPORTED)
-		set_property(TARGET blas PROPERTY IMPORTED_LOCATION ${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/libblas.dll)
-		set_property(TARGET blas PROPERTY IMPORTED_IMPLIB 	${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/libblas.lib)
+		set_property(TARGET blas PROPERTY IMPORTED_LOCATION ${SUITESPARSE_CUSTOM_BLAS_DLL})
+		set_property(TARGET blas PROPERTY IMPORTED_IMPLIB ${SUITESPARSE_CUSTOM_BLAS_LIB})
 		
 		add_library(lapack SHARED IMPORTED)
-		set_property(TARGET lapack PROPERTY IMPORTED_LOCATION 	${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/liblapack.dll)
-		set_property(TARGET lapack PROPERTY IMPORTED_IMPLIB 	${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/liblapack.lib)
+		set_property(TARGET lapack PROPERTY IMPORTED_LOCATION ${SUITESPARSE_CUSTOM_LAPACK_DLL})
+		set_property(TARGET lapack PROPERTY IMPORTED_IMPLIB ${SUITESPARSE_CUSTOM_LAPACK_LIB})
 	 
 		SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS blas lapack)
-		
-		## install lapack and blas dependencies
-		file(GLOB lapack_blas_windows_libs 	"${CMAKE_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/*.lib")
-		file(GLOB lapack_blas_windows_dll 	"${CMAKE_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/*.dll")
-		if(lapack_blas_windows_dll AND lapack_blas_windows_libs)
-			set(SuiteSparse_LAPACK_BLAS_LIB_DIR "lib${LIB_POSTFIX}/lapack_blas_windows") ## used in UseSuiteSparse*.cmake
-			install(FILES 		${lapack_blas_windows_libs} 
-								${lapack_blas_windows_dll}
-					DESTINATION ${SuiteSparse_LAPACK_BLAS_LIB_DIR}
-			)
-		endif()
 	ENDIF()
 ENDIF()
 
